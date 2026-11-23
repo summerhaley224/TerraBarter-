@@ -1,0 +1,395 @@
+{
+  "entities": {
+    "CloudUserProfile": {
+      "title": "CloudUserProfile",
+      "description": "Authenticated user's sovereign profile synced to their personal Firestore document, storing skills, barter items, wishlist, and earth stewardship terms.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the profile owner."
+        },
+        "handle": {
+          "type": "string",
+          "description": "Community handle."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name."
+        },
+        "bioRegion": {
+          "type": "string",
+          "description": "Local bioregion or watershed."
+        },
+        "nodeAddress": {
+          "type": "string",
+          "description": "Decentralized peer node address."
+        },
+        "headline": {
+          "type": "string",
+          "description": "Professional or maker headline."
+        },
+        "bio": {
+          "type": "string",
+          "description": "User bio and practice overview."
+        },
+        "earthPledge": {
+          "type": "string",
+          "description": "Earth stewardship pledge."
+        },
+        "termsAndConditions": {
+          "type": "string",
+          "description": "Sovereign barter terms and conditions."
+        },
+        "skills": {
+          "type": "array",
+          "description": "Bounded list of user skills (max 20)."
+        },
+        "barterItems": {
+          "type": "array",
+          "description": "Bounded list of barter item summaries (max 20)."
+        },
+        "wishlist": {
+          "type": "array",
+          "description": "Bounded list of wishlist item summaries (max 20)."
+        },
+        "ratingAverage": {
+          "type": "number",
+          "description": "Average community rating."
+        },
+        "tradesCompleted": {
+          "type": "integer",
+          "description": "Number of completed trades."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when created (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when last updated (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "handle",
+        "displayName",
+        "skills",
+        "barterItems",
+        "wishlist",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "CloudSkillOffering": {
+      "title": "CloudSkillOffering",
+      "description": "Community skill or barter product offering published by a user.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner UID."
+        },
+        "authorName": {
+          "type": "string",
+          "description": "Author display name."
+        },
+        "authorHandle": {
+          "type": "string",
+          "description": "Author handle."
+        },
+        "bioRegion": {
+          "type": "string",
+          "description": "Local bioregion."
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of skill or product."
+        },
+        "category": {
+          "type": "string",
+          "description": "SkillCategory enum name."
+        },
+        "description": {
+          "type": "string",
+          "description": "Offering details."
+        },
+        "tradePreference": {
+          "type": "string",
+          "description": "Desired trade in exchange."
+        },
+        "isPureBarter": {
+          "type": "boolean",
+          "description": "True if pure non-monetary barter."
+        },
+        "estimatedValue": {
+          "type": "string",
+          "description": "Estimated trade value."
+        },
+        "tags": {
+          "type": "array",
+          "description": "Bounded list of searchable tags (max 10)."
+        },
+        "isPublic": {
+          "type": "boolean",
+          "description": "Whether visible in community marketplace."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "userId",
+        "authorName",
+        "authorHandle",
+        "title",
+        "category",
+        "isPureBarter",
+        "isPublic",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "CloudWishlistItem": {
+      "title": "CloudWishlistItem",
+      "description": "Community need or wishlist item posted by a user.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner UID."
+        },
+        "authorName": {
+          "type": "string",
+          "description": "Author display name."
+        },
+        "authorHandle": {
+          "type": "string",
+          "description": "Author handle."
+        },
+        "title": {
+          "type": "string",
+          "description": "Needed item or service."
+        },
+        "category": {
+          "type": "string",
+          "description": "SkillCategory enum name."
+        },
+        "urgency": {
+          "type": "string",
+          "description": "Need urgency label."
+        },
+        "willExchangeFor": {
+          "type": "string",
+          "description": "What user offers in exchange."
+        },
+        "isPublic": {
+          "type": "boolean",
+          "description": "Whether visible in community wishlist."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "userId",
+        "authorName",
+        "authorHandle",
+        "title",
+        "category",
+        "urgency",
+        "isPublic",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "CloudBarterTrade": {
+      "title": "CloudBarterTrade",
+      "description": "Peer-to-peer barter agreement between two users.",
+      "type": "object",
+      "properties": {
+        "initiatorId": {
+          "type": "string",
+          "description": "UID of trade initiator."
+        },
+        "initiatorName": {
+          "type": "string",
+          "description": "Initiator name."
+        },
+        "receiverId": {
+          "type": "string",
+          "description": "UID or node ID of trade receiver."
+        },
+        "receiverName": {
+          "type": "string",
+          "description": "Receiver name."
+        },
+        "participantIds": {
+          "type": "array",
+          "description": "Two-element participant ID array for access control."
+        },
+        "offeredItemTitle": {
+          "type": "string",
+          "description": "Offered item or skill."
+        },
+        "requestedItemTitle": {
+          "type": "string",
+          "description": "Requested item or skill."
+        },
+        "termsAgreed": {
+          "type": "string",
+          "description": "Mutually agreed trade terms."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["PROPOSED", "ACCEPTED", "COMPLETED", "REVIEWED", "DECLINED"],
+          "description": "Trade lifecycle status."
+        },
+        "ratingScore": {
+          "type": "integer",
+          "description": "Optional rating 1..5."
+        },
+        "reviewComment": {
+          "type": "string",
+          "description": "Optional honest review comment."
+        },
+        "stewardshipBadge": {
+          "type": "string",
+          "description": "Optional earth stewardship recognition badge."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "initiatorId",
+        "initiatorName",
+        "receiverId",
+        "receiverName",
+        "participantIds",
+        "offeredItemTitle",
+        "requestedItemTitle",
+        "termsAgreed",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "CloudPeerReferral": {
+      "title": "CloudPeerReferral",
+      "description": "Peer introduction connecting a seeker with a local community provider.",
+      "type": "object",
+      "properties": {
+        "referrerId": {
+          "type": "string",
+          "description": "UID of referring member."
+        },
+        "referrerName": {
+          "type": "string",
+          "description": "Name of referrer."
+        },
+        "introducedPersonId": {
+          "type": "string",
+          "description": "ID of introduced provider."
+        },
+        "introducedPersonName": {
+          "type": "string",
+          "description": "Name of introduced provider."
+        },
+        "seekerPersonId": {
+          "type": "string",
+          "description": "ID of seeker."
+        },
+        "seekerPersonName": {
+          "type": "string",
+          "description": "Name of seeker."
+        },
+        "serviceOrSkillFocus": {
+          "type": "string",
+          "description": "Skill or service focus."
+        },
+        "introNote": {
+          "type": "string",
+          "description": "Introduction note."
+        },
+        "isContacted": {
+          "type": "boolean",
+          "description": "Whether intro connection was made."
+        },
+        "isPublic": {
+          "type": "boolean",
+          "description": "Whether visible in community referrals."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "referrerId",
+        "referrerName",
+        "introducedPersonId",
+        "introducedPersonName",
+        "seekerPersonId",
+        "seekerPersonName",
+        "serviceOrSkillFocus",
+        "introNote",
+        "isContacted",
+        "isPublic",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/CloudUserProfile" },
+      "description": "Sovereign user profile document restricted to the authenticated owner."
+    },
+    "/skill_offerings/{offeringId}": {
+      "schema": { "$ref": "#/entities/CloudSkillOffering" },
+      "description": "Published community skill and barter offerings."
+    },
+    "/wishlist_items/{itemId}": {
+      "schema": { "$ref": "#/entities/CloudWishlistItem" },
+      "description": "Community wishlist needs."
+    },
+    "/trades/{tradeId}": {
+      "schema": { "$ref": "#/entities/CloudBarterTrade" },
+      "description": "Peer-to-peer barter agreements scoped to participants."
+    },
+    "/referrals/{referralId}": {
+      "schema": { "$ref": "#/entities/CloudPeerReferral" },
+      "description": "Community peer referrals and introductions."
+    }
+  }
+}

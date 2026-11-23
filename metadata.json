@@ -1,0 +1,6 @@
+{
+  "name": "TerraBarter",
+  "description": "Decentralized peer-to-peer barter, skill-sharing & local economic network aligned with Earth stewardship.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

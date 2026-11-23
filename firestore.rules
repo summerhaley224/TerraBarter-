@@ -1,0 +1,243 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidBoundedStringList(arr, maxLen) {
+      return arr is list && arr.size() <= maxLen && (arr.size() == 0 || arr[0] is string);
+    }
+
+    function isValidUserProfile(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.handle is string && data.handle.size() >= 1 && data.handle.size() <= 64 &&
+             data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 100 &&
+             (!('bioRegion' in data) || (data.bioRegion is string && data.bioRegion.size() <= 120)) &&
+             (!('nodeAddress' in data) || (data.nodeAddress is string && data.nodeAddress.size() <= 160)) &&
+             (!('headline' in data) || (data.headline is string && data.headline.size() <= 200)) &&
+             (!('bio' in data) || (data.bio is string && data.bio.size() <= 1000)) &&
+             (!('earthPledge' in data) || (data.earthPledge is string && data.earthPledge.size() <= 1000)) &&
+             (!('termsAndConditions' in data) || (data.termsAndConditions is string && data.termsAndConditions.size() <= 1000)) &&
+             isValidBoundedStringList(data.skills, 20) &&
+             data.barterItems is list && data.barterItems.size() <= 20 &&
+             data.wishlist is list && data.wishlist.size() <= 20 &&
+             (!('ratingAverage' in data) || (data.ratingAverage is number && data.ratingAverage >= 0 && data.ratingAverage <= 5)) &&
+             (!('tradesCompleted' in data) || (data.tradesCompleted is int && data.tradesCompleted >= 0));
+    }
+
+    function isValidSkillOffering(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 100 &&
+             data.authorHandle is string && data.authorHandle.size() >= 1 && data.authorHandle.size() <= 64 &&
+             (!('bioRegion' in data) || (data.bioRegion is string && data.bioRegion.size() <= 120)) &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 160 &&
+             data.category is string && data.category.size() >= 1 && data.category.size() <= 64 &&
+             (!('description' in data) || (data.description is string && data.description.size() <= 1500)) &&
+             (!('tradePreference' in data) || (data.tradePreference is string && data.tradePreference.size() <= 500)) &&
+             data.isPureBarter is bool &&
+             (!('estimatedValue' in data) || (data.estimatedValue is string && data.estimatedValue.size() <= 120)) &&
+             (!('tags' in data) || isValidBoundedStringList(data.tags, 10)) &&
+             data.isPublic is bool;
+    }
+
+    function isValidWishlistItem(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 100 &&
+             data.authorHandle is string && data.authorHandle.size() >= 1 && data.authorHandle.size() <= 64 &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 160 &&
+             data.category is string && data.category.size() >= 1 && data.category.size() <= 64 &&
+             data.urgency is string && data.urgency.size() >= 1 && data.urgency.size() <= 40 &&
+             (!('willExchangeFor' in data) || (data.willExchangeFor is string && data.willExchangeFor.size() <= 500)) &&
+             data.isPublic is bool;
+    }
+
+    function isValidBarterTrade(data) {
+      return data.initiatorId is string && data.initiatorId.size() >= 1 && data.initiatorId.size() <= 128 &&
+             data.initiatorName is string && data.initiatorName.size() >= 1 && data.initiatorName.size() <= 100 &&
+             data.receiverId is string && data.receiverId.size() >= 1 && data.receiverId.size() <= 128 &&
+             data.receiverName is string && data.receiverName.size() >= 1 && data.receiverName.size() <= 100 &&
+             data.participantIds is list && data.participantIds.size() == 2 &&
+             data.initiatorId in data.participantIds && data.receiverId in data.participantIds &&
+             data.offeredItemTitle is string && data.offeredItemTitle.size() >= 1 && data.offeredItemTitle.size() <= 200 &&
+             data.requestedItemTitle is string && data.requestedItemTitle.size() >= 1 && data.requestedItemTitle.size() <= 200 &&
+             data.termsAgreed is string && data.termsAgreed.size() >= 1 && data.termsAgreed.size() <= 1000 &&
+             data.status in ['PROPOSED', 'ACCEPTED', 'COMPLETED', 'REVIEWED', 'DECLINED'] &&
+             (!('ratingScore' in data) || data.ratingScore == null || (data.ratingScore is int && data.ratingScore >= 1 && data.ratingScore <= 5)) &&
+             (!('reviewComment' in data) || data.reviewComment == null || (data.reviewComment is string && data.reviewComment.size() <= 1000)) &&
+             (!('stewardshipBadge' in data) || data.stewardshipBadge == null || (data.stewardshipBadge is string && data.stewardshipBadge.size() <= 120));
+    }
+
+    function isValidReferral(data) {
+      return data.referrerId is string && data.referrerId.size() >= 1 && data.referrerId.size() <= 128 &&
+             data.referrerName is string && data.referrerName.size() >= 1 && data.referrerName.size() <= 100 &&
+             data.introducedPersonId is string && data.introducedPersonId.size() >= 1 && data.introducedPersonId.size() <= 128 &&
+             data.introducedPersonName is string && data.introducedPersonName.size() >= 1 && data.introducedPersonName.size() <= 120 &&
+             data.seekerPersonId is string && data.seekerPersonId.size() >= 1 && data.seekerPersonId.size() <= 128 &&
+             data.seekerPersonName is string && data.seekerPersonName.size() >= 1 && data.seekerPersonName.size() <= 120 &&
+             data.serviceOrSkillFocus is string && data.serviceOrSkillFocus.size() >= 1 && data.serviceOrSkillFocus.size() <= 200 &&
+             data.introNote is string && data.introNote.size() >= 1 && data.introNote.size() <= 1000 &&
+             data.isContacted is bool &&
+             data.isPublic is bool;
+    }
+
+    // 1. Sovereign User Profiles (strictly owner-isolated)
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+      allow list: if isSignedIn() && request.auth.uid == userId;
+
+      allow create: if isSignedIn() &&
+                       isValidId(userId) &&
+                       request.auth.uid == userId &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll(['userId', 'handle', 'displayName', 'skills', 'barterItems', 'wishlist', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'handle', 'displayName', 'bioRegion', 'nodeAddress', 'headline', 'bio', 'earthPledge', 'termsAndConditions', 'skills', 'barterItems', 'wishlist', 'ratingAverage', 'tradesCompleted', 'createdAt', 'updatedAt']) &&
+                       incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                       incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                       isValidUserProfile(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(userId) &&
+                       request.auth.uid == userId &&
+                       isValidUserProfile(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['handle', 'displayName', 'bioRegion', 'nodeAddress', 'headline', 'bio', 'earthPledge', 'termsAndConditions', 'skills', 'barterItems', 'wishlist', 'ratingAverage', 'tradesCompleted', 'updatedAt']);
+
+      allow delete: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+    }
+
+    // 2. Skill & Barter Offerings
+    match /skill_offerings/{offeringId} {
+      allow get: if isSignedIn() && isValidId(offeringId) && (resource.data.userId == request.auth.uid || resource.data.isPublic == true);
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.isPublic == true);
+
+      allow create: if isSignedIn() &&
+                       isValidId(offeringId) &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll(['userId', 'authorName', 'authorHandle', 'title', 'category', 'isPureBarter', 'isPublic', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'authorName', 'authorHandle', 'bioRegion', 'title', 'category', 'description', 'tradePreference', 'isPureBarter', 'estimatedValue', 'tags', 'isPublic', 'createdAt', 'updatedAt']) &&
+                       incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                       incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                       isValidSkillOffering(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(offeringId) &&
+                       isValidSkillOffering(incoming()) &&
+                       existing().userId == request.auth.uid &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['authorName', 'authorHandle', 'bioRegion', 'title', 'category', 'description', 'tradePreference', 'isPureBarter', 'estimatedValue', 'tags', 'isPublic', 'updatedAt']);
+
+      allow delete: if isSignedIn() && isValidId(offeringId) && existing().userId == request.auth.uid;
+    }
+
+    // 3. Community Wishlist Items
+    match /wishlist_items/{itemId} {
+      allow get: if isSignedIn() && isValidId(itemId) && (resource.data.userId == request.auth.uid || resource.data.isPublic == true);
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.isPublic == true);
+
+      allow create: if isSignedIn() &&
+                       isValidId(itemId) &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll(['userId', 'authorName', 'authorHandle', 'title', 'category', 'urgency', 'isPublic', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'authorName', 'authorHandle', 'title', 'category', 'urgency', 'willExchangeFor', 'isPublic', 'createdAt', 'updatedAt']) &&
+                       incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                       incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                       isValidWishlistItem(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(itemId) &&
+                       isValidWishlistItem(incoming()) &&
+                       existing().userId == request.auth.uid &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['authorName', 'authorHandle', 'title', 'category', 'urgency', 'willExchangeFor', 'isPublic', 'updatedAt']);
+
+      allow delete: if isSignedIn() && isValidId(itemId) && existing().userId == request.auth.uid;
+    }
+
+    // 4. Peer-to-Peer Barter Trades
+    match /trades/{tradeId} {
+      allow get: if isSignedIn() && isValidId(tradeId) && request.auth.uid in resource.data.participantIds;
+      allow list: if isSignedIn() && request.auth.uid in resource.data.participantIds;
+
+      allow create: if isSignedIn() &&
+                       isValidId(tradeId) &&
+                       incoming().initiatorId == request.auth.uid &&
+                       request.auth.uid in incoming().participantIds &&
+                       incoming().status == 'PROPOSED' &&
+                       incoming().keys().hasAll(['initiatorId', 'initiatorName', 'receiverId', 'receiverName', 'participantIds', 'offeredItemTitle', 'requestedItemTitle', 'termsAgreed', 'status', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['initiatorId', 'initiatorName', 'receiverId', 'receiverName', 'participantIds', 'offeredItemTitle', 'requestedItemTitle', 'termsAgreed', 'status', 'ratingScore', 'reviewComment', 'stewardshipBadge', 'createdAt', 'updatedAt']) &&
+                       incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                       incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                       isValidBarterTrade(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(tradeId) &&
+                       isValidBarterTrade(incoming()) &&
+                       request.auth.uid in existing().participantIds &&
+                       existing().status != 'REVIEWED' &&
+                       existing().status != 'DECLINED' &&
+                       incoming().initiatorId == existing().initiatorId &&
+                       incoming().receiverId == existing().receiverId &&
+                       incoming().participantIds == existing().participantIds &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                       (
+                         (existing().status == 'PROPOSED' && incoming().status in ['ACCEPTED', 'DECLINED'] && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])) ||
+                         (existing().status == 'ACCEPTED' && incoming().status == 'COMPLETED' && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])) ||
+                         (existing().status == 'COMPLETED' && incoming().status == 'REVIEWED' && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'ratingScore', 'reviewComment', 'stewardshipBadge', 'updatedAt']))
+                       );
+
+      allow delete: if isSignedIn() && isValidId(tradeId) && existing().initiatorId == request.auth.uid && existing().status == 'PROPOSED';
+    }
+
+    // 5. Peer Referrals
+    match /referrals/{referralId} {
+      allow get: if isSignedIn() && isValidId(referralId) && (resource.data.referrerId == request.auth.uid || resource.data.isPublic == true);
+      allow list: if isSignedIn() && (resource.data.referrerId == request.auth.uid || resource.data.isPublic == true);
+
+      allow create: if isSignedIn() &&
+                       isValidId(referralId) &&
+                       incoming().referrerId == request.auth.uid &&
+                       incoming().keys().hasAll(['referrerId', 'referrerName', 'introducedPersonId', 'introducedPersonName', 'seekerPersonId', 'seekerPersonName', 'serviceOrSkillFocus', 'introNote', 'isContacted', 'isPublic', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['referrerId', 'referrerName', 'introducedPersonId', 'introducedPersonName', 'seekerPersonId', 'seekerPersonName', 'serviceOrSkillFocus', 'introNote', 'isContacted', 'isPublic', 'createdAt', 'updatedAt']) &&
+                       incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                       incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                       isValidReferral(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(referralId) &&
+                       isValidReferral(incoming()) &&
+                       existing().referrerId == request.auth.uid &&
+                       incoming().referrerId == existing().referrerId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['isContacted', 'introNote', 'isPublic', 'updatedAt']);
+
+      allow delete: if isSignedIn() && isValidId(referralId) && existing().referrerId == request.auth.uid;
+    }
+  }
+}
